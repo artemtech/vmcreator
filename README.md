@@ -1,0 +1,4 @@
+preqs:
+- libvirtd
+- lxml
+- pyyaml
