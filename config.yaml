@@ -19,6 +19,10 @@ services:
     volumes:
       - type: root
         size: 20G
+      - type: additional
+        size: 20G
+      - type: additional
+        size: 20G
     networks:
       - name: oam
         ipAddr: 10.10.10.211/24
@@ -28,6 +32,10 @@ services:
     volumes:
       - type: root
         size: 30G
+      - type: additional
+        size: 20G
+      - type: additional
+        size: 20G
     networks:
       - name: oam
         ipAddr: 10.10.10.212/24
