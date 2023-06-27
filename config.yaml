@@ -39,4 +39,6 @@ services:
     networks:
       - name: oam
         ipAddr: 10.10.10.212/24
+      - name: net-10.97.100
+        ipAddr: 10.97.100.99/24
     <<: *baseconfig
