@@ -265,7 +265,7 @@ def generate_disks(virsh, vm, configs, isos_path, outdir):
             disk_counter += 1
         else:
             size = disk.get('size')
-            command = f"qemu-img create -f qcow2 -F qcow2 {outdir}/{vm}-vd{alphabet_letter[disk_counter]}.qcow2 {size}"
+            command = f"qemu-img create -f qcow2 {outdir}/{vm}-vd{alphabet_letter[disk_counter]}.qcow2 {size}"
             r = subprocess.check_call(command.split(' '))
             new_disk = storage_pool.storageVolLookupByName(f"{vm}-vd{alphabet_letter[disk_counter]}.qcow2")
             storage_pool.refresh()
