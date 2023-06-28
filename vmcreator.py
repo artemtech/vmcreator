@@ -70,7 +70,7 @@ def network_cloudinit(configs, outdir):
 def user_cloudinit(configs, outdir):
     userconfig = {}
     userconfig['fqdn'] = configs.get('fqdn', 'local')
-    userconfig['timezone'] = 'Asia/Jakarta'
+    userconfig['timezone'] = configs.get('timezone', 'UTC')
     userconfig['users'] = []
     for user in configs.get('users'):
         userconfig['users'].append({

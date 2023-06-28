@@ -4,6 +4,7 @@ x-base: &baseconfig
     size: 1048
     shared: true
   image: bionic-server-cloudimg-amd64.img
+  timezone: Asia/Jakarta
   users:
     - name: sofyan
       password: sofyan
