@@ -159,17 +159,26 @@ def generate_vm(virsh, vm, configs, disks, init_disk):
     # attaching network
     net_opt = ''
     dev_counter = 1
+    netflags = (libvirt.VIR_NETWORK_UPDATE_AFFECT_LIVE|libvirt.VIR_NETWORK_UPDATE_AFFECT_CONFIG)
     for net in configs.get('networks'):
+        this_mac = generate_mac_address(virsh)
+        
         ip_cidr = ipaddress.ip_interface(net.get('ipAddr'))
+        
+        net_virsh = virsh.networkLookupByName(net.get('name', 'default'))
+        dhcp_entry = f"<host mac='{this_mac}' name='{vm}' ip='{str(ip_cidr.ip)}'/>"
+        net_virsh.update(
+            libvirt.VIR_NETWORK_UPDATE_COMMAND_ADD_LAST,
+            libvirt.VIR_NETWORK_SECTION_IP_DHCP_HOST,
+            0,
+        dhcp_entry)
+        
         net_opt += f'''
         <interface type="network">
-            <mac address="{generate_mac_address(virsh)}"/>
+            <mac address="{this_mac}"/>
             <source network="{net.get('name', 'default')}"/>
             <model type="virtio"/>
             <address type="pci" domain="0x0000" bus="0x0{dev_counter}" slot="0x00" function="0x0"/>
-            <protocol family="ipv4">
-                <ip address="{str(ip_cidr.ip)}" netmask="{str(ip_cidr.netmask)}"></ip>
-            </protocol>
         </interface>
         '''
         dev_counter += 1
@@ -274,6 +283,8 @@ def generate_disks(virsh, vm, configs, isos_path, outdir):
 def main():
     arg = argparse.ArgumentParser("vmcreator")
     arg.add_argument('--config', '-c', required=True, help="config file in yaml format")
+    arg.add_argument('action', default='install', metavar='action', help='one of [install, update, destroy]', choices=['install','update','destroy'])
+    arg.add_argument('--delete-storage', help='also delete storages defined in config.yaml when action=destroy', action='store_true')
     args = arg.parse_args()
 
     config = read_config(args.config)
@@ -293,14 +304,16 @@ def main():
 
     
     for vm in config.get('services'):
-        # generate cloudinit
-        this_init = generate_cloudinit(vm, config.get('services').get(vm), vms_path)
+        # install
+        if args.action == 'install':
+            # generate cloudinit
+            this_init = generate_cloudinit(vm, config.get('services').get(vm), vms_path)
 
-        # generate vm disks
-        this_disk = generate_disks(virsh, vm, config.get('services').get(vm), isos_path, vms_path)
+            # generate vm disks
+            this_disk = generate_disks(virsh, vm, config.get('services').get(vm), isos_path, vms_path)
 
-        # create vms
-        generate_vm(virsh, vm, config.get('services').get(vm), this_disk, this_init)
+            # create vms
+            generate_vm(virsh, vm, config.get('services').get(vm), this_disk, this_init)
 
         print(vm)
 
