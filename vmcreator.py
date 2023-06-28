@@ -200,7 +200,6 @@ def generate_vm(virsh, vm, configs, disks, init_disk):
                 <boot dev="hd"/>
             </os>
             <devices>
-                <emulator>/usr/bin/qemu-system-x86_64</emulator>
                 {disk_opt}
                 {net_opt}
                 <serial type="pty">
