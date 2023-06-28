@@ -241,7 +241,7 @@ def generate_vm(virsh, vm, configs, disks, init_disk):
         </domain>
     '''
     # create vm
-    vm = virsh.createXML(xml, flags=0)
+    vm = virsh.defineXML(xml)
     
     
 
