@@ -171,7 +171,8 @@ def generate_vm(virsh, vm, configs, disks, init_disk):
             libvirt.VIR_NETWORK_UPDATE_COMMAND_ADD_LAST,
             libvirt.VIR_NETWORK_SECTION_IP_DHCP_HOST,
             0,
-        dhcp_entry)
+            dhcp_entry,
+            netflags)
         
         net_opt += f'''
         <interface type="network">
@@ -251,6 +252,7 @@ def generate_vm(virsh, vm, configs, disks, init_disk):
     '''
     # create vm
     vm = virsh.defineXML(xml)
+    vm.create()
     
     
 
