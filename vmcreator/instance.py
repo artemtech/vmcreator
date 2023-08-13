@@ -18,7 +18,7 @@ class Instance(LibvirtConnect):
         storages: List[Storage] = None,
         uri: str = "qemu:///system",
     ):
-        super(uri)
+        LibvirtConnect.__init__(self, uri)
         self._name = name
         self._vcpu = vcpu
         self._ram = ram
@@ -26,17 +26,25 @@ class Instance(LibvirtConnect):
         self._storages = storages
         self._networks = networks
         self._instance = None
+        self._xml = None
 
     def get_instance(self) -> virDomain:
         if not self._instance:
             self.create()
+        self._xml = ET.fromstring(self._instance.XMLDesc())
         return self._instance
 
+    def get_networks(self):
+        
+        pass
+
     def create(self) -> virDomain:
-        instance = self.get_connection().lookupByName(self._name)
-        if instance:
+        try:
+            instance = self.get_connection().lookupByName(self._name)
             self._instance = instance
             return
+        except:
+            print(f"Instance {self._name} not found. Creating...")
 
         dev_counter = 1
 
@@ -44,7 +52,7 @@ class Instance(LibvirtConnect):
 
         ram_config = ""
         if self._shared_ram:
-            ram_config = """
+            ram_config = f"""
             <memoryBacking>
               <source type="memfd"/>
               <access mode="shared"/>
@@ -158,14 +166,37 @@ class Instance(LibvirtConnect):
             </devices>
         </domain>
         """
+
         instance = self.get_connection().defineXML(instanceXML)
         instance.create()
+        
         self._instance = self.get_connection().lookupByName(self._name)
-
+        print(f"Instance {self._name} successfully created.")
+        
         return self._instance
+    
+    def get_associated_storages(self):
+        # self.get_connection().
+        instance = self.get_instance()
+        root = ET.fromstring(instance.XMLDesc())
+        disks = root.findall('.//disk/source')
+        for disk in disks:
+            d = self.get_connection().storageVolLookupByPath(disk.get('file'))
+            d.delete(0)
 
-    def delete(self):
+    def delete(self, with_storage: bool = False):
         instance = self.get_instance()
         instance.destroy()
+
+        # delete if we have storage
+        if with_storage:
+            disks = self._xml.findall('.//disk/source')
+            for disk in disks:
+                d = self.get_connection().storageVolLookupByPath(disk.get('file'))
+                d.delete(0)
+        
+        # delete dhcp lease in network
+        networks = None
+
         instance.undefine()
         self._instance = None

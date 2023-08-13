@@ -3,6 +3,7 @@
 import os
 import yaml
 import argparse
+import string
 from connection import LibvirtConnect
 from instance import Instance
 from network import InstanceNetwork, VirtNetwork, VirtNetworkMode
@@ -59,7 +60,7 @@ def main():
             networks = []
 
             # generate cloudinit
-            cloudinit = Cloudinit(vm, vm_storagepool, config.get("services").get(vm))
+            cloudinit = Cloudinit(vm_name=vm, storage_pool_name=vm_storagepool, config=config.get("services").get(vm))
             storages.append(cloudinit)
 
             # generate vm disks
@@ -95,8 +96,8 @@ def main():
                     dhcp=netconfig.get("dhcp").get("enabled", False),
                     dhcp_start=netconfig.get("dhcp").get("start"),
                     dhcp_end=netconfig.get("dhcp").get("end"),
-                    mode=VirtNetworkMode[netconfig.get("mode")],
-                    domain=netconfig.get("domain", netconfig),
+                    mode=VirtNetworkMode[netconfig.get("mode").upper()],
+                    domain=netconfig.get("domain", net.get("name")),
                 )
                 this_instancenet = InstanceNetwork(vm, net.get("ipAddr"), this_net)
                 this_instancenet.create()
@@ -115,9 +116,7 @@ def main():
 
         if args.action == "destroy":
             instance = Instance(vm)
-            instance.delete()
-            if args.delete_storage:
-                pass
+            instance.delete(args.delete_storage)
             pass
         print(vm)
 

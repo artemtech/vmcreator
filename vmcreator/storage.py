@@ -1,6 +1,12 @@
 from connection import LibvirtConnect
 from libvirt import virStoragePool, virStorageVol
 from abc import abstractmethod
+import subprocess
+import os
+import tempfile
+import crypt
+import yaml
+from shutil import copyfile, rmtree
 import xml.etree.ElementTree as ET
 
 
@@ -14,7 +20,7 @@ class Storage(LibvirtConnect):
         self._storage_pool_name = storage_pool_name
         self._vm_name = vm_name
         self._disk: virStorageVol = None
-        super(uri)
+        LibvirtConnect.__init__(self, uri)
 
     @abstractmethod
     def create(self) -> None:
@@ -36,7 +42,7 @@ class Storage(LibvirtConnect):
 
     def get_disk(self) -> virStorageVol:
         if not self._disk:
-            self.generate_disk()
+            self.create()
         return self._disk
 
 
@@ -51,19 +57,23 @@ class RootStorage(Storage):
         image_pool='default',
         uri: str = "qemu:///system",
     ):
-        super(vm_name, storage_pool_name, uri)
+        Storage.__init__(self, vm_name, storage_pool_name, uri)
         self._size = size
         self._image = image
         self._image_pool = image_pool
         self._disk_mount = disk_mount
 
     def create(self):
-        disk = self.get_storage_pool().storageVolLookupByName(
-            f"{self._vm_name}-{self._disk_mount}.qcow2"
-        )
-        if disk:
+        try:
+            disk = self.get_storage_pool().storageVolLookupByName(
+                f"{self._vm_name}-root-{self._disk_mount}.qcow2"
+            )
             self._disk = disk
+            print(f"Disk {self._vm_name}-root-{self._disk_mount}.qcow2 already created.")
             return
+        except:
+            print(f"Disk {self._vm_name}-root-{self._disk_mount}.qcow2 not found, creating...")
+            disk = None
 
         vm_path = self.get_pool_path(self._storage_pool_name)
         isos_path = self.get_pool_path(self._image_pool)
@@ -74,6 +84,7 @@ class RootStorage(Storage):
         self._disk = self.get_storage_pool().storageVolLookupByName(
             f"{self._vm_name}-root-{self._disk_mount}.qcow2"
         )
+        print(f"Disk {self._vm_name}-root-{self._disk_mount}.qcow2 successfully created")
 
     def delete(self):
         volumes : List[virStorageVol] = self.get_storage_pool().listVolumes()
@@ -119,7 +130,7 @@ class Cloudinit(Storage):
         force=False,
         uri: str = "qemu:///system",
     ):
-        super(vm_name, storage_pool_name, uri)
+        Storage.__init__(self, vm_name, storage_pool_name, uri)
         self._config = config
         self._force_create = force
 
@@ -130,11 +141,11 @@ class Cloudinit(Storage):
         if os.path.exists(cloudinit_path):
             if self._force_create:
                 self.__do_generate()
-            self._disk = cloudinit_path
+            self._disk = self.get_storage_pool().storageVolLookupByName(f"{self._vm_name}.cloudinit.iso")
+            print(f"Disk {vm_path}/{self._vm_name}.cloudinit.iso already created.")
             return
 
         self.__do_generate()
-        self._disk = cloudinit_path
     
     def delete(self):
         raise NotImplementedError
@@ -151,13 +162,20 @@ class Cloudinit(Storage):
         a = subprocess.check_call(cmd.split(" "))
 
         # copy to vms pool libvirt folder
+        vm_path = self.get_pool_path(self._storage_pool_name)
         try:
             copyfile(
                 f"{tmpdir}/{self._vm_name}.cloudinit.iso",
-                f"{self._outdir}/{self._vm_name}.cloudinit.iso",
+                f"{vm_path}/{self._vm_name}.cloudinit.iso",
             )
+            # refresh after copy
+            self.get_storage_pool().refresh()
+            
+            print(f"Disk {vm_path}/{self._vm_name}.cloudinit.iso successfully created.")
+            self._disk = self.get_storage_pool().storageVolLookupByName(f"{self._vm_name}.cloudinit.iso")
         except Exception as e:
             print(e)
+            exit(-10)
 
         # cleanup tmpdirs
         try:

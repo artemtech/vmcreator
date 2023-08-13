@@ -12,7 +12,7 @@ from libvirt import (
     virNetwork,
 )
 import random
-
+from pprint import pprint
 
 class Network(ABC):
     @abstractmethod
@@ -79,6 +79,12 @@ class VirtNetwork(LibvirtConnect, Network):
         self._network: virNetwork = None
         LibvirtConnect.__init__(self, uri)
 
+    @staticmethod
+    def get_instance(net):
+        if not type(net) is Network:
+            pass
+        pass
+
     def get_name(self):
         return self._name
 
@@ -111,10 +117,13 @@ class VirtNetwork(LibvirtConnect, Network):
         return mac_joined
 
     def create(self) -> virNetwork:
-        net = self.get_connection().networkLookupByName(self._name)
-        if net:
+        try:
+            net = self.get_connection().networkLookupByName(self._name)
             self._network = net
+            print(f"Network {self._name} is found. Continuing...")
             return self._network
+        except:
+            print(f"Network {self._name} is not found. Will creating one...")
 
         netname = f"<name>{self._name}</name>"
 
@@ -145,8 +154,9 @@ class VirtNetwork(LibvirtConnect, Network):
         """
         net = self.get_connection().networkDefineXML(networkXML)
         net.create()
+        print(net.isPersistent())
         self._network = self.get_connection().networkLookupByName(self._name)
-
+        print(f"Network {self._name} successfully created.")
         return self._network
 
     def create_lease(self, port):
@@ -161,6 +171,7 @@ class VirtNetwork(LibvirtConnect, Network):
             return
 
         dhcp_entry = f"<host mac='{port.get('mac')}' name='{port.get('name')}' ip='{port.get('ip')}'/>"
+        print(dhcp_entry)
         self.get_network().update(
             VIR_NETWORK_UPDATE_COMMAND_ADD_LAST,
             VIR_NETWORK_SECTION_IP_DHCP_HOST,
@@ -185,6 +196,8 @@ class VirtNetwork(LibvirtConnect, Network):
 
     def get_leases(self) -> list:
         hosts = []
+        # cek = self.get_network().XMLDesc()
+        # pprint(cek)
         root = ET.fromstring(self.get_network().XMLDesc(0))
         dhcp = root.find(".//dhcp")
         if dhcp is not None:
@@ -240,7 +253,7 @@ class InstanceNetwork(Network):
         print(port)
 
     def get_name(self):
-        self._network.get_name()
+        return self._network.get_name()
 
     def get_mac(self):
         if self._mac:
