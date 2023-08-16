@@ -14,6 +14,7 @@ from libvirt import (
 import random
 from pprint import pprint
 
+
 class Network(ABC):
     @abstractmethod
     def create(self):
@@ -55,8 +56,10 @@ class VirtNetwork(LibvirtConnect, Network):
         gateway: str = None,
         netmask: int = None,
         flag=None,
+        debug=False,
         uri: str = "qemu:///system",
     ):
+        super(VirtNetwork, self).__init__(uri)
         self._name = name
         self._mode = mode
         self._ipcidr = ipcidr
@@ -70,6 +73,7 @@ class VirtNetwork(LibvirtConnect, Network):
         self._domain = domain
         self._gateway = gateway
         self._interfaces: list = None
+        self._debug = debug
         if flag:
             self._flag = flag
         else:
@@ -77,13 +81,6 @@ class VirtNetwork(LibvirtConnect, Network):
                 VIR_NETWORK_UPDATE_AFFECT_LIVE | VIR_NETWORK_UPDATE_AFFECT_CONFIG
             )
         self._network: virNetwork = None
-        LibvirtConnect.__init__(self, uri)
-
-    @staticmethod
-    def get_instance(net):
-        if not type(net) is Network:
-            pass
-        pass
 
     def get_name(self):
         return self._name
@@ -124,6 +121,10 @@ class VirtNetwork(LibvirtConnect, Network):
             return self._network
         except:
             print(f"Network {self._name} is not found. Will creating one...")
+            if self._debug:
+                import traceback
+
+                print(traceback.format_exc())
 
         netname = f"<name>{self._name}</name>"
 
@@ -237,15 +238,18 @@ class VirtNetwork(LibvirtConnect, Network):
         return None
 
     def delete(self):
-        raise NotImplementedError
+        self.get_network().destroy()
+        self.get_network().undefine()
 
 
 class InstanceNetwork(Network):
-    def __init__(self, vm_name: str, ipaddress: str, network: VirtNetwork):
+    def __init__(self, vm_name: str, ipaddress: str, network: VirtNetwork, debug=False):
+        super()
         self._network = network
         self._vm_name = vm_name
         self._ipaddress = ipaddress
         self._mac = None
+        self._debug = debug
 
     def create(self):
         port = {"name": self._vm_name, "ip": self._ipaddress, "mac": self.get_mac()}
