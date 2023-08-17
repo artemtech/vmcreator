@@ -14,6 +14,14 @@ version: 1
 libvirt:
   vm-pool: home-vm
   iso-pool: isos
+networks:
+  oam:
+    ipCidr: 10.10.10.1/24
+    mode: nat
+    dhcp:
+      enabled: true
+      start: 10.10.10.2
+      end: 10.10.10.254
 services:
   ubuntu-testing-01:
     fqdn: ubuntu-testing-01
@@ -26,7 +34,7 @@ services:
         size: 20G
     networks:
       - name: oam
-        ipAddr: 10.10.10.211/24
+        ipAddr: 10.10.10.211
     <<: *baseconfig
   ubuntu-testing-02:
     fqdn: ubuntu-testing-02
@@ -39,7 +47,7 @@ services:
         size: 20G
     networks:
       - name: oam
-        ipAddr: 10.10.10.212/24
+        ipAddr: 10.10.10.212
       - name: net-10.97.100
-        ipAddr: 10.97.100.99/24
+        ipAddr: 10.97.100.99
     <<: *baseconfig
