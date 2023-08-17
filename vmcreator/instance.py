@@ -1,7 +1,7 @@
 from typing import List
-from connection import LibvirtConnect
-from network import Network
-from storage import Storage, Cloudinit
+from vmcreator.connection import LibvirtConnect
+from vmcreator.network import Network
+from vmcreator.storage import Storage, Cloudinit
 from libvirt import virDomain
 import string
 import xml.etree.ElementTree as ET

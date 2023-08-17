@@ -18,17 +18,43 @@ preqs:
 - lxml
 - pyyaml
 
+installing:  
+```bash
+git clone https://github.com/artemtech/vmcreator
+cd vmcreator
+#----------------------------
+# global install
+sudo pip3 install .
+#----------------------------
+# install for current user only
+pip3 install .
+export PATH="~/.local/bin:$PATH"
+#----------------------------
+```
+
 Usage
 ===
-- install (deploying) new vm
+```bash
+vmcreator --help
 ```
-python3 vmcreator.py -c config.yaml install
+- install (deploying) new vm
+```bash
+vmcreator -c config.yaml install
 ```
 - update
-```
+```bash
 tbd
 ```
 - destroy
-```
-tbd
+```bash
+vmcreator -c config.yaml destroy
+
+# if with storage
+vmcreator -c config.yaml destroy --delete-storage
+
+# if with network
+vmcreator -c config.yaml destroy --delete-network
+
+# destroy all
+vmcreator -c config.yaml destroy --delete-storage --delete-network
 ```

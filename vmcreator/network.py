@@ -1,4 +1,4 @@
-from connection import LibvirtConnect
+from vmcreator.connection import LibvirtConnect
 from abc import abstractmethod, ABC
 from enum import Enum
 import xml.etree.ElementTree as ET
