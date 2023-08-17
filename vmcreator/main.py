@@ -135,7 +135,7 @@ def main():
     # end install
 
     # destroy
-    if args.action == "destroy":
+    elif args.action == "destroy":
         for vm in config.get("services"):
             networks: List[VirtNetwork] = []
             instance_networks: List[InstanceNetwork] = []
@@ -184,9 +184,16 @@ def main():
                 net.delete()
                 print(f">> {netname} successfully deleted.")
             print("all process done.")
-                
-
     # end destroy
+
+    # update
+    elif args.action == "update":
+        raise NotImplementedError
+    # end update
+
+    else:
+        print("Invalid action")
+        exit(-10)
 
 
 if __name__ == "__main__":
