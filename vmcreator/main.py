@@ -4,10 +4,10 @@ import os
 import yaml
 import argparse
 import string
-from connection import LibvirtConnect
-from instance import Instance
-from network import InstanceNetwork, VirtNetwork, VirtNetworkMode
-from storage import RootStorage, BasicStorage, Cloudinit
+from vmcreator.connection import LibvirtConnect
+from vmcreator.instance import Instance
+from vmcreator.network import InstanceNetwork, VirtNetwork, VirtNetworkMode
+from vmcreator.storage import RootStorage, BasicStorage, Cloudinit
 from typing import List
 
 

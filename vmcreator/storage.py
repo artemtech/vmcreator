@@ -1,4 +1,4 @@
-from connection import LibvirtConnect
+from vmcreator.connection import LibvirtConnect
 from libvirt import virStoragePool, virStorageVol
 from abc import abstractmethod
 import subprocess
