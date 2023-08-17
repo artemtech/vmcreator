@@ -1,4 +1,6 @@
-from setuptools import setup
+#!/usr/bin/env python3
+
+from distutils.core import setup
   
 setup(
     name='vmcreator',
