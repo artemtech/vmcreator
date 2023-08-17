@@ -1,4 +1,5 @@
 x-base: &baseconfig
+  # with these specs, the vm will get the same specs each other.
   cpu: 1
   ram: 
     size: 1048
@@ -12,16 +13,27 @@ x-base: &baseconfig
         - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDL2YN5r7+Ec4lGJPerj4AFJwW3E6l4y1cg9nSq5LHPJd3Et3dWHUvph3oiUlEsw3C3OfC6k/W1QFBwQJvrw7dszgotzxhtsD0zpf2WUHoRqBym1Vwd4TfLlON51KP+hPHc1/dTbGqMLqm5mOE99gvjVsbDUrdlqoINC1ER8aoXAzrmBNLkX26HIz6SAuKDye+0NG7Po323IgPomVLUmO0ID2pyKMM1AGvzmrqfpZxWMoscKyRDrZqYcW8qXys9Gouqje5B8ExUz7BF5PGoE+0S8RwsxTZU9qy5fqfInLo9XMvmqHrgnXqBN+CPXUK9fcyG1sPKagsAb9fvCq0rrw/ShgBwl0iMthFDpC2YCH1syxkvAE03QEkCnLr8/iT7ORj3S/VQ0aDsAghGkmULcrHiCK6IilIRLyb1Br0l8kfmZDjcYBAp04vWVUCAE6gBHvFJ/AncCPcLgMNOH4/q0Ljb66w8qxoiQc3H4Y9vIoRZjrTguyeUds7Go7bQPAzTuaU= altintop@ideapad-3
 version: 1
 libvirt:
+  # name of pool where your vm storages will be saved on
   vm-pool: home-vm
+  # name of pool where you save the ISO / baseimage of VM
   iso-pool: isos
 networks:
+  # define your networks that will be used in vm services
   oam:
     ipCidr: 10.10.10.1/24
+    # mode: one of: nat, route, isolated
     mode: nat
     dhcp:
       enabled: true
       start: 10.10.10.2
       end: 10.10.10.254
+  net-10.97.100:
+    ipCidr: 10.97.100.1/24
+    mode: route
+    dhcp:
+      enabled: true
+      start: 10.97.100.2
+      end: 10.97.100.254
 services:
   ubuntu-testing-01:
     fqdn: ubuntu-testing-01
@@ -51,3 +63,22 @@ services:
       - name: net-10.97.100
         ipAddr: 10.97.100.99
     <<: *baseconfig
+#  ubuntu-testing-03:
+#    fqdn: ubuntu-testing-03
+#    volumes:
+#      - type: root
+#        size: 30G
+#    networks:
+#      - name: oam
+#        ipAddr: 10.10.10.213
+#    cpu: 3
+#    ram: 
+#      size: 3192
+#      shared: true
+#    image: focal-server-cloudimg-amd64.img
+#    timezone: Asia/Jakarta
+#    users:
+#      - name: sofyan
+#        password: sofyan
+#        ssh_key: 
+#          - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDL2YN5r7+Ec4lGJPerj4AFJwW3E6l4y1cg9nSq5LHPJd3Et3dWHUvph3oiUlEsw3C3OfC6k/W1QFBwQJvrw7dszgotzxhtsD0zpf2WUHoRqBym1Vwd4TfLlON51KP+hPHc1/dTbGqMLqm5mOE99gvjVsbDUrdlqoINC1ER8aoXAzrmBNLkX26HIz6SAuKDye+0NG7Po323IgPomVLUmO0ID2pyKMM1AGvzmrqfpZxWMoscKyRDrZqYcW8qXys9Gouqje5B8ExUz7BF5PGoE+0S8RwsxTZU9qy5fqfInLo9XMvmqHrgnXqBN+CPXUK9fcyG1sPKagsAb9fvCq0rrw/ShgBwl0iMthFDpC2YCH1syxkvAE03QEkCnLr8/iT7ORj3S/VQ0aDsAghGkmULcrHiCK6IilIRLyb1Br0l8kfmZDjcYBAp04vWVUCAE6gBHvFJ/AncCPcLgMNOH4/q0Ljb66w8qxoiQc3H4Y9vIoRZjrTguyeUds7Go7bQPAzTuaU= altintop@ideapad-3
