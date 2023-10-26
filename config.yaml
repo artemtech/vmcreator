@@ -11,14 +11,28 @@ x-base: &baseconfig
       password: sofyan
       ssh_key: 
         - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDL2YN5r7+Ec4lGJPerj4AFJwW3E6l4y1cg9nSq5LHPJd3Et3dWHUvph3oiUlEsw3C3OfC6k/W1QFBwQJvrw7dszgotzxhtsD0zpf2WUHoRqBym1Vwd4TfLlON51KP+hPHc1/dTbGqMLqm5mOE99gvjVsbDUrdlqoINC1ER8aoXAzrmBNLkX26HIz6SAuKDye+0NG7Po323IgPomVLUmO0ID2pyKMM1AGvzmrqfpZxWMoscKyRDrZqYcW8qXys9Gouqje5B8ExUz7BF5PGoE+0S8RwsxTZU9qy5fqfInLo9XMvmqHrgnXqBN+CPXUK9fcyG1sPKagsAb9fvCq0rrw/ShgBwl0iMthFDpC2YCH1syxkvAE03QEkCnLr8/iT7ORj3S/VQ0aDsAghGkmULcrHiCK6IilIRLyb1Br0l8kfmZDjcYBAp04vWVUCAE6gBHvFJ/AncCPcLgMNOH4/q0Ljb66w8qxoiQc3H4Y9vIoRZjrTguyeUds7Go7bQPAzTuaU= altintop@ideapad-3
-version: 1
+  network-init:
+    version: 2
+    ethernets:
+      enp1s0:
+    vlans:
+      en-k8s:
+        id: 130
+        link: enp1s0
+        dhcp4: yes
+version: 1.2
 libvirt:
   # name of pool where your vm storages will be saved on
   vm-pool: home-vm
   # name of pool where you save the ISO / baseimage of VM
   iso-pool: isos
+
 networks:
   # define your networks that will be used in vm services
+  k8s-net:
+    # set to external: true if you want to use already 
+    # defined network in libvirt
+    external: true
   oam:
     ipCidr: 10.10.10.1/24
     # mode: one of: nat, route, isolated
@@ -34,6 +48,7 @@ networks:
       enabled: true
       start: 10.97.100.2
       end: 10.97.100.254
+
 services:
   ubuntu-testing-01:
     fqdn: ubuntu-testing-01
@@ -60,8 +75,7 @@ services:
     networks:
       - name: oam
         ipAddr: 10.10.10.212
-      - name: net-10.97.100
-        ipAddr: 10.97.100.99
+      - name: k8s-net
     <<: *baseconfig
 #  ubuntu-testing-03:
 #    fqdn: ubuntu-testing-03
