@@ -85,6 +85,10 @@ class VirtNetwork(LibvirtConnect, Network):
     def get_name(self):
         return self._name
 
+    @classmethod
+    def from_name(cls, net_name: str):
+        return cls(net_name)
+
     def _convert_ipcidr(self):
         ip_interface = ipaddress.ip_interface(self._ipcidr)
         self._ip = str(ip_interface.ip)
@@ -252,6 +256,8 @@ class InstanceNetwork(Network):
         self._debug = debug
 
     def create(self):
+        if not self._ipaddress:
+            return
         port = {"name": self._vm_name, "ip": self._ipaddress, "mac": self.get_mac()}
         self._network.create_lease(port)
         print(port)
@@ -279,7 +285,8 @@ class InstanceNetwork(Network):
         return self._network
 
     def delete(self):
-        port = {"name": self._vm_name, "ip": self._ipaddress, "mac": self.get_mac()}
-        self._network.delete_lease(port)
+        if self._ipaddress:
+            port = {"name": self._vm_name, "ip": self._ipaddress, "mac": self.get_mac()}
+            self._network.delete_lease(port)
         self._mac = None
         print(f"deleted port: {port}")
