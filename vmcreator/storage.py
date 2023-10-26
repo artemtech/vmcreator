@@ -160,16 +160,18 @@ class BasicStorage(Storage):
         self._disk_mount = disk_mount
 
     def create(self):
-        disk = self.get_storage_pool().storageVolLookupByName(
-            f"{self._vm_name}-{self._disk_mount}.qcow2"
-        )
-        if disk:
+        try:
+            disk = self.get_storage_pool().storageVolLookupByName(
+                f"{self._vm_name}-{self._disk_mount}.qcow2"
+            )
             self._disk = disk
             return
-
+        except:
+            disk = None
+        
         vm_path = self.get_pool_path(self._storage_pool_name)
 
-        command = f"qemu-img create -f qcow2 {self._output} {self._size}"
+        command = f"qemu-img create -f qcow2 {vm_path}/{self._vm_name}-{self._disk_mount}.qcow2 {self._size}"
         r = subprocess.check_call(command.split(" "))
         self.get_storage_pool().refresh()
         self._disk = self.get_storage_pool().storageVolLookupByName(
@@ -299,16 +301,20 @@ class Cloudinit(Storage):
 
     def __networkinit(self, outdir):
         networkconfig = {}
-        iface_start = 1
-        networkconfig["version"] = 2
-        networkconfig["ethernets"] = {}
+        
+        if self._config.get("network-init"):
+            networkconfig = self._config.get("network-init")
+        else:
+            iface_start = 1
+            networkconfig["version"] = 2
+            networkconfig["ethernets"] = {}
 
-        for net in self._config.get("networks"):
-            networkconfig["ethernets"][f"enp{iface_start}s0"] = {
-                "dhcp4": True,
-                "dhcp6": False,
-            }
-            iface_start += 1
+            for net in self._config.get("networks"):
+                networkconfig["ethernets"][f"enp{iface_start}s0"] = {
+                    "dhcp4": True,
+                    "dhcp6": False,
+                }
+                iface_start += 1
 
         with open(f"{outdir}/network-config", "w+") as f:
             yaml.safe_dump(networkconfig, f, allow_unicode=True, sort_keys=True)
