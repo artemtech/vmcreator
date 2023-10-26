@@ -23,6 +23,15 @@ def read_config(config_file="config.yaml"):
         print(y)
     return config
 
+def freeze_config(config, config_filename):
+    try:
+        cfg_basename = os.path.basename(
+                        os.path.splitext(config_filename)[0]
+                    ).replace(" ","_")
+        with open(f"{cfg_basename}_output.state", "w") as f:
+            yaml.safe_dump(config, f)
+    except Exception as e:
+        print(e)
 
 def main():
     arg = argparse.ArgumentParser("vmcreator")
@@ -103,19 +112,24 @@ def main():
             # generate networks
             for net in config.get("services").get(vm).get("networks"):
                 netconfig = config.get("networks").get(net.get("name"))
+                # check if it has external: true
+                if netconfig.get("external", False) :
+                    # dont instantiate the net
+                    # just query the existing net
+                    this_net = VirtNetwork.from_name(net.get("name"))
+                else:
+                    this_net = VirtNetwork(
+                        net.get("name"),
+                        ipcidr=netconfig.get("ipCidr"),
+                        dhcp=netconfig.get("dhcp").get("enabled", False),
+                        dhcp_start=netconfig.get("dhcp").get("start"),
+                        dhcp_end=netconfig.get("dhcp").get("end"),
+                        mode=VirtNetworkMode[netconfig.get("mode").upper()],
+                        domain=netconfig.get("domain", net.get("name")),
+                        debug=args.debug,
+                    )
 
-                this_net = VirtNetwork(
-                    net.get("name"),
-                    ipcidr=netconfig.get("ipCidr"),
-                    dhcp=netconfig.get("dhcp").get("enabled", False),
-                    dhcp_start=netconfig.get("dhcp").get("start"),
-                    dhcp_end=netconfig.get("dhcp").get("end"),
-                    mode=VirtNetworkMode[netconfig.get("mode").upper()],
-                    domain=netconfig.get("domain", net.get("name")),
-                    debug=args.debug,
-                )
-
-                this_instancenet = InstanceNetwork(vm, net.get("ipAddr"), this_net)
+                this_instancenet = InstanceNetwork(vm, net.get("ipAddr", None), this_net)
                 this_instancenet.create()
 
                 networks.append(this_instancenet)
@@ -132,6 +146,9 @@ def main():
             )
             instance.create()
             print("==============")
+    
+        # store current data
+        freeze_config(config, args.config)
     # end install
 
     # destroy
@@ -144,16 +161,21 @@ def main():
             for net in config.get("services").get(vm).get("networks"):
                 netconfig = config.get("networks").get(net.get("name"))
 
-                this_net = VirtNetwork(
-                    net.get("name"),
-                    ipcidr=netconfig.get("ipCidr"),
-                    dhcp=netconfig.get("dhcp").get("enabled", False),
-                    dhcp_start=netconfig.get("dhcp").get("start"),
-                    dhcp_end=netconfig.get("dhcp").get("end"),
-                    mode=VirtNetworkMode[netconfig.get("mode").upper()],
-                    debug=args.debug,
-                    domain=netconfig.get("domain", net.get("name")),
-                )
+                # check if it has external: true
+                if netconfig.get("external", False) :
+                    # dont instantiate the net
+                    this_net = VirtNetwork.from_name(net.get("name"))
+                else:
+                    this_net = VirtNetwork(
+                        net.get("name"),
+                        ipcidr=netconfig.get("ipCidr"),
+                        dhcp=netconfig.get("dhcp").get("enabled", False),
+                        dhcp_start=netconfig.get("dhcp").get("start"),
+                        dhcp_end=netconfig.get("dhcp").get("end"),
+                        mode=VirtNetworkMode[netconfig.get("mode").upper()],
+                        debug=args.debug,
+                        domain=netconfig.get("domain", net.get("name")),
+                    )
                 networks.append(this_net)
 
                 this_instancenet = InstanceNetwork(
