@@ -15,7 +15,7 @@ x-base: &baseconfig
     - name: sofyan
       password: sofyan
       ssh_key: 
-        - - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDL2YN5r7+Ec4lGJPerj4AFJwW3E6l4y1cg9nSq5LHPJd3Et3dWHUvph3oiUlEsw3C3OfC6k/W1QFBwQJvrw7dszgotzxhtsD0zpf2WUHoRqBym1Vwd4TfLlON51KP+hPHc1/dTbGqMLqm5mOE99gvjVsbDUrdlqoINC1ER8aoXAzrmBNLkX26HIz6SAuKDye+0NG7Po323IgPomVLUmO0ID2pyKMM1AGvzmrqfpZxWMoscKyRDrZqYcW8qXys9Gouqje5B8ExUz7BF5PGoE+0S8RwsxTZU9qy5fqfInLo9XMvmqHrgnXqBN+CPXUK9fcyG1sPKagsAb9fvCq0rrw/ShgBwl0iMthFDpC2YCH1syxkvAE03QEkCnLr8/iT7ORj3S/VQ0aDsAghGkmULcrHiCK6IilIRLyb1Br0l8kfmZDjcYBAp04vWVUCAE6gBHvFJ/AncCPcLgMNOH4/q0Ljb66w8qxoiQc3H4Y9vIoRZjrTguyeUds7Go7bQPAzTuaU= altintop@ideapad-3 
+        - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDL2YN5r7+Ec4lGJPerj4AFJwW3E6l4y1cg9nSq5LHPJd3Et3dWHUvph3oiUlEsw3C3OfC6k/W1QFBwQJvrw7dszgotzxhtsD0zpf2WUHoRqBym1Vwd4TfLlON51KP+hPHc1/dTbGqMLqm5mOE99gvjVsbDUrdlqoINC1ER8aoXAzrmBNLkX26HIz6SAuKDye+0NG7Po323IgPomVLUmO0ID2pyKMM1AGvzmrqfpZxWMoscKyRDrZqYcW8qXys9Gouqje5B8ExUz7BF5PGoE+0S8RwsxTZU9qy5fqfInLo9XMvmqHrgnXqBN+CPXUK9fcyG1sPKagsAb9fvCq0rrw/ShgBwl0iMthFDpC2YCH1syxkvAE03QEkCnLr8/iT7ORj3S/VQ0aDsAghGkmULcrHiCK6IilIRLyb1Br0l8kfmZDjcYBAp04vWVUCAE6gBHvFJ/AncCPcLgMNOH4/q0Ljb66w8qxoiQc3H4Y9vIoRZjrTguyeUds7Go7bQPAzTuaU= altintop@ideapad-3 
   network-init:
     version: 2
     ethernets:
