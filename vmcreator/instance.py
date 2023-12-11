@@ -75,7 +75,7 @@ class Instance(LibvirtConnect):
             """
 
         # cpu configs
-        cpu = f'<vcpu placement="static">{self._vcpu}</vcpu>'
+        cpu = f'<cpu mode="host-passthrough"></cpu><vcpu placement="static">{self._vcpu}</vcpu>'
 
         # storage config
         disk_opt = ""
