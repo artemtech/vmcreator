@@ -134,7 +134,7 @@ class Instance(LibvirtConnect):
             <on_crash>destroy</on_crash>
             {cpu}
             <os>
-                <type arch="x86_64" machine="pc-q35-7.2">hvm</type>
+                <type arch="x86_64" machine="q35">hvm</type>
                 <boot dev="hd"/>
             </os>
             <devices>
